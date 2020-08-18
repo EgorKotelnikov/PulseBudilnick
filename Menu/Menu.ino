@@ -25,7 +25,7 @@ char hour = -1;
 char minute = -1;
 char second = -1;
 char zum = 9; // заменить в основном скетче #define на переменную
-boolean changer = HIGH;  // аналог, нужно использовать один и тот же в основном скетче
+boolean changer = true;  // аналог, нужно использовать один и тот же в основном скетче
 enum {
   TIME,
   TIME_OF_ALARM,
