@@ -2,6 +2,7 @@
 #include <iarduino_RTC.h>
 
 void menu();
+void mainListMenu();
 void encoder();
 void button();
 boolean checkRightRotation();
@@ -10,6 +11,7 @@ boolean checkClick();
 void timeSetting();
 void volumeSetting();
 void printVolume();
+void frequencySetting();
 
 volatile char counter = 0; // настройка времени дребезга контактов
 volatile unsigned long timer = 0;
@@ -17,12 +19,13 @@ volatile char changes = 0;
 volatile boolean click_flag = false; 
 unsigned long timer_for_menu = 0;
 unsigned long mode_timer = 0; // аналог, нужно использовать один и тот же в основном скетче
+byte heartbeat = 120;  // аналог, нужно использовать один и тот же в основном скетче, возможно, заменить int на byte
 char wday = -1;
 char hour = -1;
 char minute = -1;
 char second = -1;
-char zum = 9;
-boolean changer = HIGH;
+char zum = 9; // заменить в основном скетче #define на переменную
+boolean changer = HIGH;  // аналог, нужно использовать один и тот же в основном скетче
 enum {
   TIME,
   TIME_OF_ALARM,
@@ -96,16 +99,11 @@ void menu() {
   lcd.createChar(0, new_sign);
   lcd.createChar(1, volume_sign);
   lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.write(0);
-  lcd.setCursor(1, 0)
-  lcd.print(mode_string[0]);
-  lcd.setCursor(0, 1);
-  lcd.print(mode_string[1]);
+  mainListMenu();
   while (true) {
     if (checkRightRotation()) {
       modes++;
-      constrain(modes, 0, 5);
+      modes = constrain(modes, 0, 5);
       lcd.clear(); // чтобы убрать мерцание, первую строку можно переписать с пробелами
       lcd.setCursor(0, 0);
       lcd.print(mode_string[modes-1]);
@@ -134,7 +132,7 @@ void menu() {
     }
     else if (checkLeftRotation()) {
       modes--;
-      constrain(modes, 0, 5);
+      modes = constrain(modes, 0, 5);
       lcd.clear();
       lcd.setCursor(0, 1);
       lcd.print(mode_string[modes+1]);
@@ -164,28 +162,48 @@ void menu() {
     if (checkClick()) {
       switch(modes) {
         case 0:
+          lcd.clear();
           timeSetting();
+          lcd.clear();
+          mainListMenu();
           break;
         case 1:
           // Response time setting"
           break;
         case 2:
+          lcd.clear();
           volumeSetting();
+          lcd.clear();
+          mainListMenu();
           break;
         case 3:
-          // Frequency setting
+          lcd.clear();
+          frequencySetting();
+          lcd.clear();
+          mainListMenu();
           break;
         case 4:
           // Configure without sound
           break;
       }
       if (modes == 5) {
+        lcd.clear();
         break;
       }
     }
   }
   modes = 0;
   lcd.noDisplay();
+}
+
+void mainListMenu() {     //отображает меню в начале работы с меню
+  modes = 0;
+  lcd.setCursor(0, 0);
+  lcd.write(0);
+  lcd.setCursor(1, 0)
+  lcd.print(mode_string[0]);
+  lcd.setCursor(0, 1);
+  lcd.print(mode_string[1]);
 }
 
 void encoder() {
@@ -254,13 +272,13 @@ void timeSetting() {
   while(wday == -1 || !checkClick()) {
     if (checkRightRotation()) {
       wday ++;
-      constrain(wday, 0, 6);
+      wday = constrain(wday, 0, 6);
       lcd.setCursor(2, 1);
       lcd.print(weekdays[wday]);
     }
     else if (checkLeftRotation()) {
       wday --;
-      constrain(wday, 0, 6);
+      wday = constrain(wday, 0, 6);
       lcd.setCursor(2,1);
       lcd.print(weekdays[wday]);
     }
@@ -268,14 +286,14 @@ void timeSetting() {
   while (hour == -1 || !checkClick()) {
     if (checkRightRotation()) {
       hour++;
-      constrain(hour, 0, 23);
+      hour = constrain(hour, 0, 23);
       lcd.setCursor(6, 1);
       if (hour < 10) lcd.print("0" + (String)hour);
       else lcd.print(hour);
     }
     else if (checkLeftRotation()) {
       hour--;
-      constrain(hour, 0, 23);
+      hour = constrain(hour, 0, 23);
       lcd.setCursor(6, 1);
       if (hour < 10) lcd.print("0" + (String)hour);
       else lcd.print(hour);
@@ -284,14 +302,14 @@ void timeSetting() {
   while (minute == -1 || !checkClick()) {
     if (checkRightRotation()) {
       minute++;
-      constrain(minute, 0, 59);
+      minute = constrain(minute, 0, 59);
       lcd.setCursor(9, 1);
       if (minute < 10) lcd.print("0" + (String)minute);
       else lcd.print(minute);
     }
     else if (checkLeftRotation()) {
       minute--;
-      constrain(minute, 0, 59);
+      minute = constrain(minute, 0, 59);
       lcd.setCursor(9, 1);
       if (minute < 10) lcd.print("0" + (String)minute);
       else lcd.print(minute);
@@ -300,14 +318,14 @@ void timeSetting() {
   while (second == -1 || !checkClick()) {
     if (checkRightRotation()) {
       second++;
-      constrain(second, 0, 59);
+      second = constrain(second, 0, 59);
       lcd.setCursor(12, 1);
       if (second < 10) lcd.print("0" + (String)second);
       else lcd.print(second);
     }
     else if (checkLeftRotation()) {
       second--;
-      constrain(second, 0, 59);
+      second = constrain(second, 0, 59);
       lcd.setCursor(12, 1);
       if (second < 10) lcd.print("0" + (String)second);
       else lcd.print(second);
@@ -378,3 +396,27 @@ void printVolume() {     // мигание можно убрать, не очи�
   }
 }
 
+void frequencySetting() {
+  lcd.setCursor(1, 0);
+  lcd.print("Value of pulse");
+  lcd.setCursor(6, 1);
+  lcd.print(heartbeat);
+  while(!checkClick()) {
+    if (checkLeftRotation()) {
+      heartbeat--;
+      heartbeat = constrain(heartbeat, 100, 200);
+      lcd.setCursor(6, 1);
+      lcd.print("   ");
+      lcd.setCursor(6, 1);
+      lcd.print(heartbeat);
+    }
+    if (checkRightRotation()) {
+      heartbeat++;
+      heartbeat = constrain(heartbeat, 100, 200);
+      lcd.setCursor(6, 1);
+      lcd.print("   ");
+      lcd.setCursor(6, 1);
+      lcd.print(heartbeat);
+    }
+  }
+}
