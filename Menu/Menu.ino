@@ -12,6 +12,8 @@ void timeSetting();
 void volumeSetting();
 void printVolume();
 void frequencySetting();
+void settingWithoutSound();
+void makeSound();
 
 volatile char counter = 0; // настройка времени дребезга контактов
 volatile unsigned long timer = 0;
@@ -25,7 +27,8 @@ char hour = -1;
 char minute = -1;
 char second = -1;
 char zum = 9; // заменить в основном скетче #define на переменную
-boolean changer = HIGH;  // аналог, нужно использовать один и тот же в основном скетче
+boolean changer = true;  // аналог, нужно использовать один и тот же в основном скетче
+boolean sound = true;
 enum {
   TIME,
   TIME_OF_ALARM,
@@ -102,6 +105,7 @@ void menu() {
   mainListMenu();
   while (true) {
     if (checkRightRotation()) {
+      makeSound();
       modes++;
       modes = constrain(modes, 0, 5);
       lcd.clear(); // чтобы убрать мерцание, первую строку можно переписать с пробелами
@@ -131,6 +135,7 @@ void menu() {
       }
     }
     else if (checkLeftRotation()) {
+      makeSound();
       modes--;
       modes = constrain(modes, 0, 5);
       lcd.clear();
@@ -160,6 +165,7 @@ void menu() {
       }
     }
     if (checkClick()) {
+      makeSound();
       switch(modes) {
         case 0:
           lcd.clear();
@@ -271,20 +277,24 @@ void timeSetting() {
   lcd.print("DAY HO:MI:SE");
   while(wday == -1 || !checkClick()) {
     if (checkRightRotation()) {
+      makeSound();
       wday ++;
       wday = constrain(wday, 0, 6);
       lcd.setCursor(2, 1);
       lcd.print(weekdays[wday]);
     }
     else if (checkLeftRotation()) {
+      makeSound();
       wday --;
       wday = constrain(wday, 0, 6);
       lcd.setCursor(2,1);
       lcd.print(weekdays[wday]);
     }
   }
+  makeSound();
   while (hour == -1 || !checkClick()) {
     if (checkRightRotation()) {
+      makeSound();
       hour++;
       hour = constrain(hour, 0, 23);
       lcd.setCursor(6, 1);
@@ -292,6 +302,7 @@ void timeSetting() {
       else lcd.print(hour);
     }
     else if (checkLeftRotation()) {
+      makeSound();
       hour--;
       hour = constrain(hour, 0, 23);
       lcd.setCursor(6, 1);
@@ -299,8 +310,10 @@ void timeSetting() {
       else lcd.print(hour);
     }
   }
+  makeSound();
   while (minute == -1 || !checkClick()) {
     if (checkRightRotation()) {
+      makeSound();
       minute++;
       minute = constrain(minute, 0, 59);
       lcd.setCursor(9, 1);
@@ -308,6 +321,7 @@ void timeSetting() {
       else lcd.print(minute);
     }
     else if (checkLeftRotation()) {
+      makeSound();
       minute--;
       minute = constrain(minute, 0, 59);
       lcd.setCursor(9, 1);
@@ -315,8 +329,10 @@ void timeSetting() {
       else lcd.print(minute);
     }
   }
+  makeSound();
   while (second == -1 || !checkClick()) {
     if (checkRightRotation()) {
+      makeSound();
       second++;
       second = constrain(second, 0, 59);
       lcd.setCursor(12, 1);
@@ -324,6 +340,7 @@ void timeSetting() {
       else lcd.print(second);
     }
     else if (checkLeftRotation()) {
+      makeSound();
       second--;
       second = constrain(second, 0, 59);
       lcd.setCursor(12, 1);
@@ -331,6 +348,7 @@ void timeSetting() {
       else lcd.print(second);
     }
   }
+  makeSound();
   time.settime(second,minute,hour,time.day,time.month,time.year,wday);
 }
 // для создания функции настройки времени срабатывания
@@ -404,6 +422,7 @@ void frequencySetting() {
   lcd.print(heartbeat);
   while(!checkClick()) {
     if (checkLeftRotation()) {
+      makeSound();
       heartbeat--;
       heartbeat = constrain(heartbeat, 100, 200);
       lcd.setCursor(6, 1);
@@ -412,6 +431,7 @@ void frequencySetting() {
       lcd.print(heartbeat);
     }
     if (checkRightRotation()) {
+      makeSound();
       heartbeat++;
       heartbeat = constrain(heartbeat, 100, 200);
       lcd.setCursor(6, 1);
@@ -419,5 +439,23 @@ void frequencySetting() {
       lcd.setCursor(6, 1);
       lcd.print(heartbeat);
     }
+  }
+  makeSound();
+}
+
+void settingWithoutSound() {
+  makeSound();
+  sound = !sound;
+}
+
+void makeSound() {
+  if (!sound) {
+    return;  
+  }
+  else {
+    mode_timer = millis();
+    analogWrite(zum, 150);
+    while (millis() - timer <= 20) {}
+    digitalWrite(zum, LOW);
   }
 }
