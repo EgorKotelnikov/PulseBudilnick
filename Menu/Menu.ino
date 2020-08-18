@@ -359,6 +359,7 @@ void volumeSetting() {
       analogWrite(zum, (changer) ? 150 : 0); // возможно, изменить скважность
     }
   }
+  digitalWrite(zum, LOW);
 }
 
 void printVolume() {     // мигание можно убрать, не очищая весь дисплей, а выводя вторую строку из пробелов (lcd.print("     ");)
